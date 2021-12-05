@@ -1,10 +1,6 @@
+const readline = require('readline');
 const axios = require('axios').default;
 
-if (process.argv.length < 3) {
-	throw new Error('node parse-bscscan.js <URL>')
-}
-
-const url = process.argv[2];
 
 let chainMapper = (url) => {
   if (url.match("^https://finder.terra.money")) return 'terra';
@@ -69,7 +65,6 @@ let parser = {
 };
 
 async function parse(url) {
-  console.info("fetching %s", url);
   let chain = chainMapper(url);
   url = parser[chain][0](url);
   let response = await axios.get(url, {
@@ -85,5 +80,25 @@ async function parse(url) {
   console.log(`${parsedDate}\t${parsedGwei}\t${parsedGas}\t${parsedPrice}`);
 }
 
-parse(url);
+const processLines = async () => {
 
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: false
+  });
+
+  for await (const line of rl) {
+    await parse(line);
+  }
+}
+
+if (process.argv.length > 2) {
+
+  let url = process.argv[2];
+  parse(url);
+
+} else {
+
+  processLines();
+}
