@@ -17,8 +17,12 @@ let parser = {
       return dateStr ? dateStr[1] : 'UNKNOWN';
     },
     (webContent) =>  {
-      let gwei = webContent.match("id=\"ContentPlaceHolder1_spanGasPrice\".*\\(([0-9]+).*Gwei");
-      return gwei ? gwei[1] : 'UNKNOWN';
+      // <span id="ContentPlaceHolder1_spanGasPrice" title="" data-toggle="tooltip" data-original-title="The price offered to the miner to purchase this amount of GAS （per GAS）">
+      // 0<b>.</b>000000041347598028 Ether (41<b>.</b>347598028 Gwei)</span>
+      let gwei = webContent.match("(\\d+)\\s+Ether \\(\\d+");
+      if (!gwei) return 'UNKNOWN';
+      gwei = Number(gwei[1])/1000000000;
+      return gwei;
     },
     (webContent) =>  {
       let gas = webContent.match("id=\"ContentPlaceHolder1_spanTxFee\".*</b>(\\d+).*\\(\\$([0-9.]+)\\)");
